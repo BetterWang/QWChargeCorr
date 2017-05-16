@@ -37,10 +37,10 @@
 
 using namespace std;
 
-class QWCumuGap : public edm::EDAnalyzer {
+class QWChargeCorr : public edm::EDAnalyzer {
 	public:
-		explicit QWCumuGap(const edm::ParameterSet&);
-		~QWCumuGap();
+		explicit QWChargeCorr(const edm::ParameterSet&);
+		~QWChargeCorr();
 
 	private:
 		virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -74,7 +74,7 @@ class QWCumuGap : public edm::EDAnalyzer {
 };
 
 
-QWCumuGap::QWCumuGap(const edm::ParameterSet& iConfig):
+QWChargeCorr::QWChargeCorr(const edm::ParameterSet& iConfig):
 	trackEta_( iConfig.getUntrackedParameter<edm::InputTag>("trackEta") ),
 	trackPhi_( iConfig.getUntrackedParameter<edm::InputTag>("trackPhi") ),
 	trackPt_( iConfig.getUntrackedParameter<edm::InputTag>("trackPt") ),
@@ -119,13 +119,13 @@ QWCumuGap::QWCumuGap(const edm::ParameterSet& iConfig):
 
 }
 
-QWCumuGap::~QWCumuGap()
+QWChargeCorr::~QWChargeCorr()
 {
 	return;
 }
 
 void
-QWCumuGap::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+QWChargeCorr::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 	using namespace edm;
 
@@ -136,7 +136,7 @@ QWCumuGap::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	Handle<std::vector<double> >	hWeight;
 	Handle<std::vector<double> >	hVz;
 	Handle<std::complex<double> >	hQ;
-	Handle<std::vector<double> >	hW;
+	Handle<double >	hW;
 
 	iEvent.getByLabel(trackEta_,	hEta);
 	iEvent.getByLabel(trackPhi_,	hPhi);
