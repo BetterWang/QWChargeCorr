@@ -1,0 +1,12 @@
+PbPb2015_cumu
+bin/
+pix/
+pPb
+cumu
+test/*
+!test/qw*.py
+!test/pPb*.py
+!test/crab_*.py
+!test/run*.sh
+*.pyc
+tmp/
