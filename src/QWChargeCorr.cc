@@ -162,7 +162,7 @@ QWChargeCorr::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			if ( (*hPt)[j] < minpt_ or (*hPt)[j] > maxpt_ ) continue;
 			if ( (*hEta)[j] < mineta_ or (*hEta)[j] > maxeta_ ) continue;
 			double gap = fabs( (*hEta)[i] - (*hEta)[j] );
-			double x = TMath::Cos((*hPhi)[i] + (*hPhi)[j] - 2 * (*hQ) );
+			double x = TMath::Cos((*hPhi)[i] + (*hPhi)[j] - (*hQ) );
 			math::PtEtaPhiMLorentzVector part1( (*hPt)[i], (*hEta)[i], (*hPhi)[i], 0.13957018 );
 			math::PtEtaPhiMLorentzVector part2( (*hPt)[j], (*hEta)[j], (*hPhi)[j], 0.13957018 );
 			math::PtEtaPhiMLorentzVector pair = part1 + part2;
