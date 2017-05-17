@@ -53,7 +53,8 @@ class QWChargeCorr : public edm::EDAnalyzer {
 		edm::InputTag		trackWeight_;
 		edm::InputTag		vertexZ_;
 
-		edm::InputTag		caloQ_;
+		edm::InputTag		caloArg_;
+		edm::InputTag		caloAbs_;
 		edm::InputTag		caloW_;
 
 		edm::InputTag		centralityTag_;
@@ -81,7 +82,8 @@ QWChargeCorr::QWChargeCorr(const edm::ParameterSet& iConfig):
 	trackCharge_( iConfig.getUntrackedParameter<edm::InputTag>("trackCharge") ),
 	trackWeight_( iConfig.getUntrackedParameter<edm::InputTag>("trackWeight") ),
 	vertexZ_( iConfig.getUntrackedParameter<edm::InputTag>("vertexZ") ),
-	caloQ_( iConfig.getUntrackedParameter<edm::InputTag>("caloQ") ),
+	caloArg_( iConfig.getUntrackedParameter<edm::InputTag>("caloArg") ),
+	caloAbs_( iConfig.getUntrackedParameter<edm::InputTag>("caloAbs") ),
 	caloW_( iConfig.getUntrackedParameter<edm::InputTag>("caloW") ),
 	centralityTag_( iConfig.getUntrackedParameter<edm::InputTag>("centrality") ),
 	vCentBins_( iConfig.getUntrackedParameter<std::vector<double> >("CentBins") ),
@@ -96,7 +98,8 @@ QWChargeCorr::QWChargeCorr(const edm::ParameterSet& iConfig):
         consumes<std::vector<double> >(trackWeight_);
         consumes<std::vector<double> >(trackCharge_);
         consumes<std::vector<double> >(vertexZ_);
-        consumes<double >(caloQ_);
+        consumes<double >(caloArg_);
+        consumes<double >(caloAbs_);
         consumes<double >(caloW_);
 
 	minvz_ = iConfig.getUntrackedParameter<double>("minvz", -15.);
@@ -135,7 +138,8 @@ QWChargeCorr::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	Handle<std::vector<double> >	hCharge;
 	Handle<std::vector<double> >	hWeight;
 	Handle<std::vector<double> >	hVz;
-	Handle<double >	hQ;
+	Handle<double >	hArg;
+	Handle<double >	hAbs;
 	Handle<double >	hW;
 
 	iEvent.getByLabel(trackEta_,	hEta);
@@ -144,8 +148,12 @@ QWChargeCorr::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	iEvent.getByLabel(trackCharge_, hCharge);
 	iEvent.getByLabel(trackWeight_, hWeight);
 	iEvent.getByLabel(vertexZ_, 	hVz);
-	iEvent.getByLabel(caloQ_, 	hQ);
+	iEvent.getByLabel(caloArg_, 	hArg);
+	iEvent.getByLabel(caloAbs_, 	hAbs);
 	iEvent.getByLabel(caloW_, 	hW);
+
+	std::complex<double> HFQ(TMath::Cos(*hArg), TMath::Sin(*hArg));
+	HFQ = HFQ * (*hAbs);
 
 	if ( hVz->size() < 1 ) return;
 	if ( fabs((*hVz)[0]) > maxvz_ or fabs((*hVz)[0]) < minvz_ ) return;
@@ -162,18 +170,20 @@ QWChargeCorr::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			if ( (*hPt)[j] < minpt_ or (*hPt)[j] > maxpt_ ) continue;
 			if ( (*hEta)[j] < mineta_ or (*hEta)[j] > maxeta_ ) continue;
 			double gap = fabs( (*hEta)[i] - (*hEta)[j] );
-			double x = TMath::Cos((*hPhi)[i] + (*hPhi)[j] - (*hQ) );
+
+			std::complex<double> x( TMath::Cos((*hPhi)[i] + (*hPhi)[j]), TMath::Sin((*hPhi)[i] + (*hPhi)[j]) );
+			x = x*std::conj(HFQ) * (*hWeight)[i] * (*hWeight)[j];
 			math::PtEtaPhiMLorentzVector part1( (*hPt)[i], (*hEta)[i], (*hPhi)[i], 0.13957018 );
 			math::PtEtaPhiMLorentzVector part2( (*hPt)[j], (*hEta)[j], (*hPhi)[j], 0.13957018 );
 			math::PtEtaPhiMLorentzVector pair = part1 + part2;
 			double minv = pair.M();
 			if ( (*hCharge)[i] == (*hCharge)[j] ) {
 				// SS
-				hSS->Fill( minv, (*ch), gap, x * (*hWeight)[i] * (*hWeight)[j] * (*hW) );
+				hSS->Fill( minv, (*ch), gap, x.real() );
 				hSSNP->Fill( minv, (*ch), gap, (*hWeight)[i] * (*hWeight)[j] * (*hW) );
 			} else {
 				// OS
-				hOS->Fill( minv, (*ch), gap, x * (*hWeight)[i] * (*hWeight)[j] * (*hW) );
+				hOS->Fill( minv, (*ch), gap, x.real() );
 				hOSNP->Fill( minv, (*ch), gap, (*hWeight)[i] * (*hWeight)[j] * (*hW) );
 			}
 		}

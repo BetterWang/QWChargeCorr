@@ -35,14 +35,15 @@ process.hltMB.HLTPaths = [
 process.hltMB.andOr = cms.bool(True)
 process.hltMB.throw = cms.bool(False)
 
-process.chargecorr = cms.EDAnalyzer('QWChargeCorr'
+process.chargecorrP = cms.EDAnalyzer('QWChargeCorr'
 	, trackEta = cms.untracked.InputTag('QWEvent', "eta")
 	, trackPhi = cms.untracked.InputTag('QWEvent', "phi")
 	, trackPt = cms.untracked.InputTag('QWEvent', "pt")
 	, trackWeight = cms.untracked.InputTag('QWEvent', "weight")
 	, trackCharge = cms.untracked.InputTag('QWEvent', "charge")
 	, vertexZ = cms.untracked.InputTag('QWEvent', "vz")
-	, caloQ = cms.untracked.InputTag('HFQvect', 'plus')
+	, caloArg = cms.untracked.InputTag('HFQvect', 'argp')
+	, caloAbs = cms.untracked.InputTag('HFQvect', 'absp')
 	, caloW = cms.untracked.InputTag('HFQvect', 'Wplus')
 	, centrality = cms.untracked.InputTag('Noff')
 	, minvz = cms.untracked.double(-15.0)
@@ -60,15 +61,50 @@ process.chargecorr = cms.EDAnalyzer('QWChargeCorr'
 	, GapBins = cms.untracked.vdouble(0. ,  0.3,  0.6,  0.9,  1.2,  1.5,  1.8,  2.1,  2.4,  2.7,  3. , 3.3,  3.6,  3.9,  4.2,  4.5, 4.8)
 )
 
+process.chargecorrM = process.chargecorrP.clone(
+	caloArg = cms.untracked.InputTag('HFQvect', 'argm'),
+	caloAbs = cms.untracked.InputTag('HFQvect', 'absm'),
+	caloW = cms.untracked.InputTag('HFQvect', 'Wminus')
+        )
+
+
+process.qprod = cms.EDAnalyzer('QWQProduct'
+        , caloArgP = cms.untracked.InputTag('HFQvect', 'argp')
+        , caloAbsP = cms.untracked.InputTag('HFQvect', 'absp')
+        , caloWP = cms.untracked.InputTag('HFQvect', 'Wplus')
+        , caloArgM = cms.untracked.InputTag('HFQvect', 'argm')
+        , caloAbsM = cms.untracked.InputTag('HFQvect', 'absm')
+        , caloWM = cms.untracked.InputTag('HFQvect', 'Wminus')
+        , trkArg = cms.untracked.InputTag('TrkQvect', 'arg')
+        , trkAbs = cms.untracked.InputTag('TrkQvect', 'abs')
+        , trkW = cms.untracked.InputTag('TrkQvect', 'W')
+	, centrality = cms.untracked.InputTag('Noff')
+	, CentBins = cms.untracked.vdouble(*range(0, 1010, 10))
+        )
+
+process.TrkQvect = cms.EDProducer('QWCaloQProducer'
+	, trackEta = cms.untracked.InputTag('QWEvent', "eta")
+	, trackPhi = cms.untracked.InputTag('QWEvent', "phi")
+	, trackPt = cms.untracked.InputTag('QWEvent', "pt")
+	, trackWeight = cms.untracked.InputTag('QWEvent', "weight")
+        , etaMin = cms.untracked.double(-2.4)
+        , etaMax = cms.untracked.double(2.4)
+        , ptMin = cms.untracked.double(0.3)
+        , ptMax = cms.untracked.double(3.0)
+	, N = cms.untracked.int32(2)
+	, ptWeight = cms.untracked.bool(True)
+        )
+
 process.HFQvect = cms.EDProducer('QWCaloQProducer'
-		, caloSrc = cms.untracked.InputTag('towerMaker')
-		, etaMin = cms.untracked.double(3.)
-		, etaMax = cms.untracked.double(5.)
-		, N = cms.untracked.int32(2)
-		)
+	, caloSrc = cms.untracked.InputTag('towerMaker')
+	, etaMin = cms.untracked.double(3.)
+	, etaMax = cms.untracked.double(5.)
+	, N = cms.untracked.int32(2)
+	)
+
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('cumu.root')
-)
+        fileName = cms.string('cumu.root')
+        )
 
 
 process.load('HeavyIonsAnalysis.Configuration.collisionEventSelection_cff')
@@ -104,7 +140,7 @@ process.histHFPhiMinus = process.histHFPhiSum.clone( src = cms.untracked.InputTa
 
 process.HFmon = cms.Sequence(process.histHFPhiSum + process.histHFPhiPlus + process.histHFPhiMinus)
 
-process.ana = cms.Path(process.eventSelection*process.makeEvent*process.ppRecoCentFilter* process.HFQvect *process.chargecorr * process.vectMonW * process.HFmon)
+process.ana = cms.Path(process.eventSelection*process.makeEvent*process.ppRecoCentFilter* process.HFQvect * process.chargecorrP * process.chargecorrM * process.TrkQvect * process.qprod * process.vectMonW * process.HFmon)
 #process.ana = cms.Path( process.eventSelection * process.makeEvent * process.ppRecoCentFilter * process.HFQvect )
 #process.ana = cms.Path(process.eventSelection*process.makeEvent*process.ppRecoCentFilter* process.vectMonW )
 
