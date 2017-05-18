@@ -166,7 +166,7 @@ QWChargeCorr::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	for ( int i = 0; i < sz; i++ ) {
 		if ( (*hPt)[i] < minpt_ or (*hPt)[i] > maxpt_ ) continue;
 		if ( (*hEta)[i] < mineta_ or (*hEta)[i] > maxeta_ ) continue;
-		for ( int j = 0; j < sz; j++ ) {
+		for ( int j = i+1; j < sz; j++ ) {
 			if ( (*hPt)[j] < minpt_ or (*hPt)[j] > maxpt_ ) continue;
 			if ( (*hEta)[j] < mineta_ or (*hEta)[j] > maxeta_ ) continue;
 			double gap = fabs( (*hEta)[i] - (*hEta)[j] );
