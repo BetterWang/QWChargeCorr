@@ -146,9 +146,9 @@ QWQProduct::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	std::complex<double>	QHFp(TMath::Cos(*hcaloArgP), TMath::Sin(*hcaloArgP));
 	std::complex<double>	QHFm(TMath::Cos(*hcaloArgM), TMath::Sin(*hcaloArgM));
 	std::complex<double>	Qtrk(TMath::Cos(*htrkArg), TMath::Sin(*htrkArg));
-	QHFp = QHFp * hcaloAbsP;
-	QHFm = QHFm * hcaloAbsM;
-	Qtrk = Qtrk * htrkAbs;
+	QHFp = QHFp * (*hcaloAbsP);
+	QHFm = QHFm * (*hcaloAbsM);
+	Qtrk = Qtrk * (*htrkAbs);
 
 	hHFpHFm->Fill( *ch, (QHFp * std::conj(QHFm)).real() );
 	hHFpTrk->Fill( *ch, (QHFp * std::conj(Qtrk)).real() );

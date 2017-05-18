@@ -82,7 +82,7 @@ process.qprod = cms.EDAnalyzer('QWQProduct'
 	, CentBins = cms.untracked.vdouble(*range(0, 1010, 10))
         )
 
-process.TrkQvect = cms.EDProducer('QWCaloQProducer'
+process.TrkQvect = cms.EDProducer('QWTrackQProducer'
 	, trackEta = cms.untracked.InputTag('QWEvent', "eta")
 	, trackPhi = cms.untracked.InputTag('QWEvent', "phi")
 	, trackPt = cms.untracked.InputTag('QWEvent', "pt")
@@ -129,16 +129,17 @@ process.load('PbPb_HIMB5_ppReco_eff')
 process.QWEvent.fweight = cms.untracked.InputTag('Hydjet_PbPb_eff_v1.root')
 
 process.histHFPhiSum = cms.EDAnalyzer('QWHistDAnalyzer',
-		src = cms.untracked.InputTag('HFQvect', 'sum'),
+		src = cms.untracked.InputTag('HFQvect', 'arg'),
 		Nbins = cms.untracked.int32(1000),
 		start = cms.untracked.double(-5),
 		end = cms.untracked.double(5),
 		)
 
-process.histHFPhiPlus = process.histHFPhiSum.clone( src = cms.untracked.InputTag("HFQvect", 'plus') )
-process.histHFPhiMinus = process.histHFPhiSum.clone( src = cms.untracked.InputTag("HFQvect", 'minus') )
+process.histHFPhiPlus = process.histHFPhiSum.clone( src = cms.untracked.InputTag("HFQvect", 'argp') )
+process.histHFPhiMinus = process.histHFPhiSum.clone( src = cms.untracked.InputTag("HFQvect", 'argm') )
+process.histTrkPhi = process.histHFPhiSum.clone( src = cms.untracked.InputTag("TrkQvect", 'arg') )
 
-process.HFmon = cms.Sequence(process.histHFPhiSum + process.histHFPhiPlus + process.histHFPhiMinus)
+process.HFmon = cms.Sequence(process.histHFPhiSum + process.histHFPhiPlus + process.histHFPhiMinus + process.histTrkPhi)
 
 process.ana = cms.Path(process.eventSelection*process.makeEvent*process.ppRecoCentFilter* process.HFQvect * process.chargecorrP * process.chargecorrM * process.TrkQvect * process.qprod * process.vectMonW * process.HFmon)
 #process.ana = cms.Path( process.eventSelection * process.makeEvent * process.ppRecoCentFilter * process.HFQvect )
