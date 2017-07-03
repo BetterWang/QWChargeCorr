@@ -25,53 +25,13 @@ process.source = cms.Source("PoolSource",
 )
 
 import HLTrigger.HLTfilters.hltHighLevel_cfi
-process.hltHM120 = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-process.hltHM120.HLTPaths = [
-	"HLT_PAFullTracks_Multiplicity120_v*",
-#	"HLT_PAFullTracks_Multiplicity150_v*",
-#	"HLT_PAFullTracks_Multiplicity185_*",
-#	"HLT_PAFullTracks_Multiplicity220_v*",
-#	"HLT_PAFullTracks_Multiplicity250_v*",
-#	"HLT_PAFullTracks_Multiplicity280_v*",
-]
-process.hltHM120.andOr = cms.bool(True)
-process.hltHM120.throw = cms.bool(False)
+process.hltMB = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
+process.hltMB.HLTPaths = [
+		        "HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part*",
+			]
+process.hltMB.andOr = cms.bool(True)
+process.hltMB.throw = cms.bool(False)
 
-process.hltHM150 = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-process.hltHM150.HLTPaths = [
-	"HLT_PAFullTracks_Multiplicity120_v*",
-	"HLT_PAFullTracks_Multiplicity150_v*",
-#	"HLT_PAFullTracks_Multiplicity185_*",
-#	"HLT_PAFullTracks_Multiplicity220_v*",
-#	"HLT_PAFullTracks_Multiplicity250_v*",
-#	"HLT_PAFullTracks_Multiplicity280_v*",
-]
-process.hltHM150.andOr = cms.bool(True)
-process.hltHM150.throw = cms.bool(False)
-
-process.hltHM185 = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-process.hltHM185.HLTPaths = [
-#	"HLT_PAFullTracks_Multiplicity120_v*",
-#	"HLT_PAFullTracks_Multiplicity150_v*",
-	"HLT_PAFullTracks_Multiplicity185_*",
-#	"HLT_PAFullTracks_Multiplicity220_v*",
-#	"HLT_PAFullTracks_Multiplicity250_v*",
-#	"HLT_PAFullTracks_Multiplicity280_v*",
-]
-process.hltHM185.andOr = cms.bool(True)
-process.hltHM185.throw = cms.bool(False)
-
-process.hltHM250 = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-process.hltHM250.HLTPaths = [
-#	"HLT_PAFullTracks_Multiplicity120_v*",
-#	"HLT_PAFullTracks_Multiplicity150_v*",
-#	"HLT_PAFullTracks_Multiplicity185_*",
-#	"HLT_PAFullTracks_Multiplicity220_v*",
-	"HLT_PAFullTracks_Multiplicity250_v*",
-#	"HLT_PAFullTracks_Multiplicity280_v*",
-]
-process.hltHM250.andOr = cms.bool(True)
-process.hltHM250.throw = cms.bool(False)
 
 process.chargecorrP = cms.EDAnalyzer('QWChargeCorr'
 	, trackEta = cms.untracked.InputTag('QWEvent', "eta")
@@ -196,75 +156,27 @@ process.ppNoffFilter250 = process.centralityFilter.clone(
 process.load('pPb_HM_eff')
 process.QWEvent.fweight = cms.untracked.InputTag('Hijing_8TeV_dataBS.root')
 
-process.histHFPhiSum120 = cms.EDAnalyzer('QWHistDAnalyzer',
+process.histHFPhiSum = cms.EDAnalyzer('QWHistDAnalyzer',
 		src = cms.untracked.InputTag('HFQvect', 'arg'),
 		Nbins = cms.untracked.int32(1000),
 		start = cms.untracked.double(-5),
 		end = cms.untracked.double(5),
 		)
 
-process.histHFPhiSum150 = process.histHFPhiSum120.clone()
-process.histHFPhiSum185 = process.histHFPhiSum120.clone()
-process.histHFPhiSum250 = process.histHFPhiSum120.clone()
+process.histHFPhiPlus = process.histHFPhiSum.clone(
+		src = cms.untracked.InputTag('HFQvect', 'argp')
+		)
 
-process.histHFPhiPlus120 = process.histHFPhiSum120.clone( src = cms.untracked.InputTag("HFQvect", 'argp') )
-process.histHFPhiPlus150 = process.histHFPhiPlus120.clone()
-process.histHFPhiPlus185 = process.histHFPhiPlus120.clone()
-process.histHFPhiPlus250 = process.histHFPhiPlus120.clone()
+process.histHFPhiMinus = process.histHFPhiSum.clone(
+		src = cms.untracked.InputTag('HFQvect', 'argm')
+		)
 
-process.histHFPhiMinus120 = process.histHFPhiSum120.clone( src = cms.untracked.InputTag("HFQvect", 'argm') )
-process.histHFPhiMinus150 = process.histHFPhiMinus120.clone()
-process.histHFPhiMinus185 = process.histHFPhiMinus120.clone()
-process.histHFPhiMinus250 = process.histHFPhiMinus120.clone()
+process.HFmon = cms.Sequence(process.histHFPhiSum + process.histHFPhiPlus + process.histHFPhiMinus)
 
-process.HFmon120 = cms.Sequence(process.histHFPhiSum120 + process.histHFPhiPlus120 + process.histHFPhiMinus120)
-process.HFmon150 = cms.Sequence(process.histHFPhiSum150 + process.histHFPhiPlus150 + process.histHFPhiMinus150)
-process.HFmon185 = cms.Sequence(process.histHFPhiSum185 + process.histHFPhiPlus185 + process.histHFPhiMinus185)
-process.HFmon250 = cms.Sequence(process.histHFPhiSum250 + process.histHFPhiPlus250 + process.histHFPhiMinus250)
+process.mon = cms.Sequence(process.histNoff + process.vectPhi + process.vectPt + process.vectEta + process.vectPhiW + process.vectPtW + process.vectEtaW + process.HFmon )
 
-process.vectPhi120 = process.vectPhi.clone()
-process.vectPhi150 = process.vectPhi.clone()
-process.vectPhi185 = process.vectPhi.clone()
-process.vectPhi250 = process.vectPhi.clone()
-
-process.vectPhiW120 = process.vectPhiW.clone()
-process.vectPhiW150 = process.vectPhiW.clone()
-process.vectPhiW185 = process.vectPhiW.clone()
-process.vectPhiW250 = process.vectPhiW.clone()
-
-process.vectEta120 = process.vectEta.clone()
-process.vectEta150 = process.vectEta.clone()
-process.vectEta185 = process.vectEta.clone()
-process.vectEta250 = process.vectEta.clone()
-
-process.vectEtaW120 = process.vectEtaW.clone()
-process.vectEtaW150 = process.vectEtaW.clone()
-process.vectEtaW185 = process.vectEtaW.clone()
-process.vectEtaW250 = process.vectEtaW.clone()
-
-process.vectPt120 = process.vectPt.clone()
-process.vectPt150 = process.vectPt.clone()
-process.vectPt185 = process.vectPt.clone()
-process.vectPt250 = process.vectPt.clone()
-
-process.vectPtW120 = process.vectPtW.clone()
-process.vectPtW150 = process.vectPtW.clone()
-process.vectPtW185 = process.vectPtW.clone()
-process.vectPtW250 = process.vectPtW.clone()
-
-process.mon120 = cms.Sequence(process.histNoff + process.vectPhi120 + process.vectPt120 + process.vectEta120 + process.vectPhiW120 + process.vectPtW120 + process.vectEtaW120 + process.HFmon120 )
-process.mon150 = cms.Sequence(process.histNoff + process.vectPhi150 + process.vectPt150 + process.vectEta150 + process.vectPhiW150 + process.vectPtW150 + process.vectEtaW150 + process.HFmon150 )
-process.mon185 = cms.Sequence(process.histNoff + process.vectPhi185 + process.vectPt185 + process.vectEta185 + process.vectPhiW185 + process.vectPtW185 + process.vectEtaW185 + process.HFmon185 )
-process.mon250 = cms.Sequence(process.histNoff + process.vectPhi250 + process.vectPt250 + process.vectEta250 + process.vectPhiW250 + process.vectPtW250 + process.vectEtaW250 + process.HFmon250 )
-
-process.ana120 = cms.Path(process.hltHM120*process.eventSelection*process.Noff*process.ppNoffFilter120*process.QWEvent * process.TrkQvect * process.HFQvect * process.chargecorrP * process.chargecorrM * process.qprod * process.mon120)
-process.ana150 = cms.Path(process.hltHM150*process.eventSelection*process.Noff*process.ppNoffFilter150*process.QWEvent * process.TrkQvect * process.HFQvect * process.chargecorrP * process.chargecorrM * process.qprod * process.mon150)
-process.ana185 = cms.Path(process.hltHM185*process.eventSelection*process.Noff*process.ppNoffFilter185*process.QWEvent * process.TrkQvect * process.HFQvect * process.chargecorrP * process.chargecorrM * process.qprod * process.mon185)
-process.ana250 = cms.Path(process.hltHM250*process.eventSelection*process.Noff*process.ppNoffFilter250*process.QWEvent * process.TrkQvect * process.HFQvect * process.chargecorrP * process.chargecorrM * process.qprod * process.mon250)
+process.ana = cms.Path(process.hltMB*process.eventSelection*process.Noff*process.QWEvent * process.TrkQvect * process.HFQvect * process.chargecorrP * process.chargecorrM * process.qprod * process.mon)
 
 process.schedule = cms.Schedule(
-	process.ana120,
-	process.ana150,
-#	process.ana185,
-#	process.ana250,
+	process.ana
 )
